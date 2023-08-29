@@ -32,8 +32,14 @@ def SnakevizProfilingMiddleware(get_response):  # noqa: N802
         log.info("Starting SnakevizProfilingMiddleware profiling (this will slow down requests!)")
 
         with tempfile.NamedTemporaryFile() as prof_dump:
-            with cProfile.Profile() as profile:
+
+            profile = cProfile.Profile()
+            profile.enable()
+            try:
                 resp = get_response(request)
+            finally:
+                profile.disable()
+
             profile.dump_stats(prof_dump.name)
 
             if resp.status_code == HTTP_OK_STATUS_CODE:
@@ -50,7 +56,6 @@ def SnakevizProfilingMiddleware(get_response):  # noqa: N802
                 )
 
             prof_data = Stats(prof_dump.name)
-
             context = {
                 "profile_name": request.path,
                 "table_rows": table_rows(prof_data),
