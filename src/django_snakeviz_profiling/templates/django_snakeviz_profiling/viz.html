@@ -138,6 +138,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       </table>
     </div>
 
+    <div id="db_table_div">
+      <table cellpadding="0" cellspacing="0" border="0" class="display" id="queries-table">
+        <thead>
+          <tr>
+            <th title="SQL query">Query</th>
+            <th title="Django DB Connection where query was run">Connection</th>
+            <th title="Number of times the same query was run (in duplicate)">Count</th>
+            <th title="Total time spent running this query">Time</th>
+            <th title="Average time per query (Time / Count)">Average</th>
+            <th title="Median query time">Median</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+
     <!-- footer -->
     <footer class="sv-footer">
       <a class="footer-link" href="https://jiffyclub.github.io/snakeviz/">SnakeViz Docs</a>
@@ -187,6 +202,33 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           $('#resetbutton-zoom').prop('disabled', true);
           $('#resetbutton-root').prop('disabled', false);
         }).on('mouseenter', 'tr', function () {
+          $(this).children('td').addClass('data-table-hover');
+        }).on('mouseleave', 'tr', function () {
+          $(this).children('td').removeClass('data-table-hover');
+        });
+      });
+    </script>
+
+    {{ db_queries|json_script:"db_queries" }}
+    <script>
+      var db_queries = JSON.parse(document.getElementById('db_queries').textContent);
+      $(document).ready(function() {
+        var table = $('#queries-table').dataTable({
+          'data': db_queries,
+          'columns': [
+            // Note: columns are also defined in #queries-table in HTML above,
+            // this list must line up with that.
+            {},
+            {'type': 'num', 'searchable': 'false'},
+            {'type': 'num', 'searchable': 'false'},
+            {'type': 'num', 'searchable': 'false'},
+            {'type': 'num', 'searchable': 'false'},
+            {'type': 'num', 'searchable': 'false'},
+          ],
+          'order': [2, 'desc'],
+          'paging': false
+        }).api();
+        $('#queries-table tbody').on('mouseenter', 'tr', function () {
           $(this).children('td').addClass('data-table-hover');
         }).on('mouseleave', 'tr', function () {
           $(this).children('td').removeClass('data-table-hover');

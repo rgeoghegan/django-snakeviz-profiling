@@ -5,11 +5,11 @@
 
 -----
 
-Django Snakeviz Profiling integrates [snakeviz](https://pypi.org/project/snakeviz/) and [django-querycount](https://github.com/bradmontgomery/django-querycount)
-into one django middleware that can show results inline in your application.
+Django Snakeviz Profiling integrates [snakeviz](https://pypi.org/project/snakeviz/)
+into a django middleware that can show results inline in your application.
 
-No migrations are required nor do any extra views need to be added to your application,
-only one piece of middleware installed.
+No migrations are required nor do any extra url routes need to be added to your application,
+only requiring to install one piece of middleware.
 
 **Table of Contents**
 

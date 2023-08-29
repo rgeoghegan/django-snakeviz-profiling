@@ -7,9 +7,11 @@ from pstats import Stats
 from django.conf import settings
 from django.shortcuts import render
 from django.utils.safestring import SafeString
-from snakeviz.stats import json_stats, table_rows
+from snakeviz import stats
 
-log = logging.getLogger(__name__)
+from django_snakeviz_profiling.db_profile import DbProfile
+
+log = logging.getLogger("django_snakeviz_profiling")
 
 
 PROFILING_PARAMETER = "SNAKEVIZ_PROFILING"
@@ -31,45 +33,48 @@ def SnakevizProfilingMiddleware(get_response):  # noqa: N802
 
         log.info("Starting SnakevizProfilingMiddleware profiling (this will slow down requests!)")
 
-        with tempfile.NamedTemporaryFile() as prof_dump:
+        with DbProfile.start_logging_queries() as db_profile:
+            with tempfile.NamedTemporaryFile() as prof_dump:
+                profile = cProfile.Profile()
+                profile.enable()
+                try:
+                    resp = get_response(request)
+                finally:
+                    profile.disable()
 
-            profile = cProfile.Profile()
-            profile.enable()
-            try:
-                resp = get_response(request)
-            finally:
-                profile.disable()
+                profile.dump_stats(prof_dump.name)
 
-            profile.dump_stats(prof_dump.name)
-
-            if resp.status_code == HTTP_OK_STATUS_CODE:
-                log.info(
-                    "Got %d status code and %d byte response in profiled request",
-                    resp.status_code,
-                    len(resp.content),
-                )
-            else:
-                log.warning(
-                    "Got %d status code and %d byte response in profiled request",
-                    resp.status_code,
-                    len(resp.content),
-                )
-
-            prof_data = Stats(prof_dump.name)
-            context = {
-                "profile_name": request.path,
-                "table_rows": table_rows(prof_data),
-                "callees": SafeString(
-                    json.dumps(
-                        json_stats(prof_data),
+                if resp.status_code == HTTP_OK_STATUS_CODE:
+                    log.info(
+                        "Got %d status code and %d byte response in profiled request",
+                        resp.status_code,
+                        len(resp.content),
                     )
-                ),
-            }
-            resp = render(
-                request,
-                "django_snakeviz_profiling/viz.html",
-                context,
-            )
+                else:
+                    log.warning(
+                        "Got %d status code and %d byte response in profiled request",
+                        resp.status_code,
+                        len(resp.content),
+                    )
+
+                prof_data = Stats(prof_dump.name)
+                table_rows = stats.table_rows(prof_data)
+                callees = stats.json_stats(prof_data)
+
+            db_queries = db_profile.collate_queries()
+
+        context = {
+            "profile_name": request.path,
+            "table_rows": table_rows,
+            "callees": SafeString(json.dumps(callees)),
+            "db_queries": db_queries,
+        }
+
+        resp = render(
+            request,
+            "django_snakeviz_profiling/viz.html",
+            context,
+        )
 
         log.info("SnakevizProfilingMiddleware profiling done.")
         return resp
