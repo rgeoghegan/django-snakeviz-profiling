@@ -32,9 +32,9 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/unknown/django-snakeviz-profiling#readme"
-Issues = "https://github.com/unknown/django-snakeviz-profiling/issues"
-Source = "https://github.com/unknown/django-snakeviz-profiling"
+Documentation = "https://github.com/rgeoghegan/django-snakeviz-profiling#readme"
+Issues = "https://github.com/rgeoghegan/django-snakeviz-profiling/issues"
+Source = "https://github.com/rgeoghegan/django-snakeviz-profiling"
 
 [tool.hatch.version]
 path = "src/django_snakeviz_profiling/__about__.py"
@@ -45,16 +45,7 @@ dependencies = [
   "pytest",
 ]
 [tool.hatch.envs.default.scripts]
-test = "pytest {args:tests}"
-test-cov = "coverage run -m pytest {args:tests}"
-cov-report = [
-  "- coverage combine",
-  "coverage report",
-]
-cov = [
-  "test-cov",
-  "cov-report",
-]
+test = "python runtests.py"
 
 [[tool.hatch.envs.all.matrix]]
 python = ["3.7", "3.8", "3.9", "3.10", "3.11"]
