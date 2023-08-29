@@ -6,7 +6,7 @@
 -----
 
 Django Snakeviz Profiling integrates [snakeviz](https://pypi.org/project/snakeviz/)
-into a django middleware that can show results inline in your application.
+along with a db query display into a django middleware that can show results inline in your application.
 
 No migrations are required nor do any extra url routes need to be added to your application,
 only requiring to install one piece of middleware.
@@ -14,6 +14,7 @@ only requiring to install one piece of middleware.
 **Table of Contents**
 
 - [Installation](#installation)
+- [Usage](#usage)
 - [License](#license)
 
 ## Installation
@@ -30,7 +31,14 @@ possible to cover as much code as possible:
         ...
     ]
 
-And also add the following config setting:
+Add `django_snakeviz_profiling` to your installed apps:
+
+    INSTALLED_APPS = [
+        ...
+        "django_snakeviz_profiling",
+    ]
+
+Finally, add the following config setting:
 
     SNAKEVIZ_PROFILING = "PLEASE_PROFILE_REQUESTS"
 
@@ -41,6 +49,9 @@ On any request, add the following GET parameter to your url:
     SNAKEVIZ_PROFILING=PLEASE_PROFILE_REQUESTS
 
 , and instead of the regular page, you will be presented with a profile output from the request.
+
+Note that if `django_snakeviz_profiling` is used, individual requests will be dramatically slower,
+so be careful using this in prod!
 
 ## License
 
